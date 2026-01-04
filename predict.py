@@ -98,7 +98,7 @@ team_patterns = {
     "América": r"américa|america|club america|aguilas|las aguilas|águilas|club águilas|aguilas del america|aguilas del américa",
     "Atlas": r"atlas|atlas fc|rojinegros|los rojinegros|club atlas|rojinegros de atlas|los rojinegros de atlas",
     "Atlético San Luis": r"atlético san luis|atletico san luis|san luis|atl. san luis|san luis potosí|san luis potosi",
-    "Atlante": r"atlante",
+    "Atlante": r"atlante|club atlante|los potros|potros de hierba|los potros de hierba",
     "Chiapas": r"chiapas|jaguares|jaguares de chiapas",
     "Cruz Azul": r"cruz azul|la maquina|maquina|la máquina|club cruz azul|la maquina celeste|los cementeros",
     "Dorados de Sinaloa": r"dorados de sinaloa|dorados|sinaloa",
