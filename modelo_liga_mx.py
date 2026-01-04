@@ -15,6 +15,13 @@ import os
 print("Cargando datos Liga MX...")
 url = "https://www.football-data.co.uk/new/MEX.csv"
 df = pd.read_csv(url)
+if df.empty:
+    print("Error: No se pudieron cargar los datos.")
+    # cargamos desde un archivo local como respaldo
+    if os.path.exists('data/MEX.csv'):
+        df = pd.read_csv('data/MEX.csv')
+    else:
+        print("Error: Archivo de respaldo no encontrado.")
 
 df = df[['Date','Home','Away','HG','AG','Res']]
 df.columns = ['fecha','local','visitante','goles_local','goles_visita','res']

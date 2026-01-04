@@ -93,7 +93,7 @@ def predecir(local, visita):
 # modelo_bin = joblib.load('modelo_bin.joblib')
 # modelo_multi = joblib.load('modelo_multi.joblib')
 
-# =============================== Lista de equipos de la Liga MX y sus nombres en el dataset ===============================
+# =============================== Lista de equipos de la Liga MX y sus nombres en el dataset + nombres comunes ===============================
 team_patterns = {
     "América": r"américa|america|club america|aguilas|las aguilas|águilas|club águilas|aguilas del america|aguilas del américa",
     "Atlas": r"atlas|atlas fc|rojinegros|los rojinegros|club atlas|rojinegros de atlas|los rojinegros de atlas",
