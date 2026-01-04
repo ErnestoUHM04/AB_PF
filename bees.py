@@ -1,15 +1,38 @@
 # Cornejo Morales Paola
-# Hernándz Martínez Ernesto Ulises
-
-# Usar el algoritmo de colonia de abejas para resolver el problema de la mochila que se asignó en la práctica 1.
-# Recuerden utilizar los límites de las variables de acuerdo con problema, respetando los límites de 3 Love Potions y 2 Skiving Snackbox.
-# Para el resto de productos los límites están entre (0,10).
+# Hernández Martínez Ernesto Ulises
 
 import random
 
-###### Parameters ######
+# Usar el algoritmo de la colonia de abejas para encontrar el mejor parley posible para una jornada de la Liga MX.
+
+# Cada jornada es un conjunto de partidos que se juegan en una misma semana.
+# Usaremos varias abejas () para cada jornada, y posteriormente se repetirá el proceso para abarcar todas las jornadas de la temporada.
+
+# Cada abeja se verá de esta manera:
+# [x1, x2, x3, x4, x5, x6, x7, x8, x9].   <-- cada xi representa un partido de la jornada
+# Cada xi es un vector que puede tomar los valores:
+# xi = [xi1, xi2]
+# xi1 = 1 si se incluye el partido en el parley, 0 si no se incluye.
+# xi2 = 0 si se predice victoria local, 1 si se predice empate, 2 si se predice victoria visitante.
+
+# Una abeja no debe tener todos los partidos de la jornada obligatoriamente, puede tener solo algunos.
+partidos_min_jornada = 3 # Mínimo de partidos que debe tener una abeja para considerarse válida.  <-- CAMBIAR SI ESTOY MAL
+
+# Hay 17 jornadas en la temporada regular de la Liga MX.
+jornadas = 17
+
+# P(asertar todos los partidos del parley) = P(p1) * P(p2) * ... * P(p9) <-- Usar el modelo entrenado previamente para obtener esta probabilidad.
+
+# M(momios de la apuesta) = M(p1) * M(p2) * ... * M(p9)
+
+# La función Fitness de una abeja será:
+# f = P(asertar todos los partidos del parley) / M(momios de la apuesta)
+
+# BUSCAMOS MAXIMIZAR LA FUNCIÓN FITNESS
+
+###### Parameters ###### <----- para un BeeHive Algorithm
 # Número de variables
-n = 7
+n = 9
 # Tamaño del enjambre = 40
 beehive_size = 40
 # abeja obreras = 20
@@ -19,34 +42,15 @@ worker_bees_count = beehive_size // 2
 observer_bees_count = beehive_size // 2
 #print("Número de abejas observadoras:", observer_bees_count)
 # límite = 5
-limit = 5
-#limit = (beehive_size * n) // 2
+# limit = 5
+limit = (beehive_size * n) // 2
 # iteraciones = 50
 max_iterations = 50
-# Capacidad de la mochila : 30 lb
+# Capacidad de la mochila : 30 lb.     <----- ESTE VALOR SE VA A CAMBIAR O ELIMINAR
 max_capacity = 30
 
-# x1 = Decoy Detonators (0-10)  - 4 lb      - $ 10
-#x1_lower_bound = 0
-#x1_upper_bound = 10
-# x2 = Love Potions (3-10)      - 2 lb      - $ 8
-#x2_lower_bound = 3
-#x2_upper_bound = 10
-# x3 = Extendable Ears (0-10)   - 5 lb      - $ 12
-#x3_lower_bound = 0
-#x3_upper_bound = 10
-# x4 = Skiving Snackbox (2-10)  - 5 lb      - $ 6
-#x4_lower_bound = 2
-#x4_upper_bound = 10
-# x5 = Fever Fudge (0-10)       - 2 lb      - $ 3
-#x5_lower_bound = 0
-#x5_upper_bound = 10
-# x6 = Puking Pastilles (0-10)  - 1.5 lb    - $ 2
-#x6_lower_bound = 0
-#x6_upper_bound = 10
-# x7 = Nosebleed Nougat (0-10)  - 1 lb      - $ 2
-#x7_lower_bound = 0
-#x7_upper_bound = 10
+########################
+
 
 def create_worker_bee(lower_bounds, upper_bounds):
     bee = []
