@@ -61,148 +61,152 @@ def leer_historial_liga():
 # Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
 # Luego compararemos las dos predicciones
 df = leer_historial_liga()
-print(df.head()) # Verificamos que se haya cargado correctamente <-- Imprimer las primeras 5 lineas
+# print(df.head()) # Verificamos que se haya cargado correctamente <-- Imprimer las primeras 5 lineas
 
-# Ahora usaremos estos vectores para guardar los partidos que usaremos en el parley para cada jornada
-jornada1 = [] # 0 si no se incluye el partido, 1 si se incluye
-jornada2 = []
-jornada3 = []
-jornada4 = []
-jornada5 = []
-jornada6 = []
-jornada7 = []
-jornada8 = []
-jornada9 = []
-jornada10 = []
-jornada11 = []
-jornada12 = []
-jornada13 = []
-jornada14 = []
-jornada15 = []
-jornada16 = []
-jornada17 = []
+def define_parley_games(df, umbral_diferencia = 0.15):
+    # Ahora usaremos estos vectores para guardar los partidos que usaremos en el parley para cada jornada
+    jornada1 = [] # 0 si no se incluye el partido, 1 si se incluye
+    jornada2 = []
+    jornada3 = []
+    jornada4 = []
+    jornada5 = []
+    jornada6 = []
+    jornada7 = []
+    jornada8 = []
+    jornada9 = []
+    jornada10 = []
+    jornada11 = []
+    jornada12 = []
+    jornada13 = []
+    jornada14 = []
+    jornada15 = []
+    jornada16 = []
+    jornada17 = []
 
-umbral_diferencia = 0.15  # Umbral para considerar una diferencia significativa  <--- CAMBIAR ESTE VALOR SI ES NECESARIO
+    umbral_diferencia = umbral_diferencia  # Umbral para considerar una diferencia significativa  <--- CAMBIAR ESTE VALOR SI ES NECESARIO
 
-for i in range(len(df)):
-    # Conseguir los nombres de los equipos y las probabilidades históricas
-    local = df.iloc[i]['Local']
-    visitante = df.iloc[i]['Visitante']
-    prob_local_histo = df.iloc[i]['PG_L']
-    prob_empate_histo = df.iloc[i]['PG_E']
-    prob_visita_histo = df.iloc[i]['PG_V']
-    # Usar el modelo para predecir las probabilidades
-    prob_local_model, prob_empate_model, prob_visita_model = predecir(local, visitante)
+    for i in range(len(df)):
+        # Conseguir los nombres de los equipos y las probabilidades históricas
+        local = df.iloc[i]['Local']
+        visitante = df.iloc[i]['Visitante']
+        prob_local_histo = df.iloc[i]['PG_L']
+        prob_empate_histo = df.iloc[i]['PG_E']
+        prob_visita_histo = df.iloc[i]['PG_V']
+        # Usar el modelo para predecir las probabilidades
+        prob_local_model, prob_empate_model, prob_visita_model = predecir(local, visitante)
 
-    # Comparamos las probabilidaddes
-    prob_local_diff = abs(prob_local_histo - prob_local_model)
-    prob_empate_diff = abs(prob_empate_histo - prob_empate_model)
-    prob_visita_diff = abs(prob_visita_histo - prob_visita_model)
+        # Comparamos las probabilidaddes
+        prob_local_diff = abs(prob_local_histo - prob_local_model)
+        prob_empate_diff = abs(prob_empate_histo - prob_empate_model)
+        prob_visita_diff = abs(prob_visita_histo - prob_visita_model)
 
-    # También conseguimos el mejor resultado según el modelo    <---- ESTO SERÁ A LO QUE APOSTAREMOS
-    mejor_resultado_model = max(prob_local_model, prob_empate_model, prob_visita_model)
-    if mejor_resultado_model == prob_local_model:
-        mejor_resultado_model_str = 'Local'
-    elif mejor_resultado_model == prob_empate_model:
-        mejor_resultado_model_str = 'Empate'
-    else:
-        mejor_resultado_model_str = 'Visita'
-
-    # Si la diferencia entre las probabilidades es menor al umbral, entonces incluimos el partido en el parley
-    if prob_local_diff < umbral_diferencia and prob_empate_diff < umbral_diferencia and prob_visita_diff < umbral_diferencia:
-        # Si la diferencia es pequeña, entonces incluimos el partido en el parley
-        jornada = df.iloc[i]['Jornada']
-        if jornada == '1':
-            jornada1.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '2':
-            jornada2.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '3':
-            jornada3.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '4':
-            jornada4.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '5':
-            jornada5.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '6':
-            jornada6.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '7':
-            jornada7.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '8':
-            jornada8.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '9':
-            jornada9.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '10':
-            jornada10.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '11':
-            jornada11.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '12':
-            jornada12.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '13':
-            jornada13.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '14':
-            jornada14.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '15':
-            jornada15.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '16':
-            jornada16.append((1, local, visitante, mejor_resultado_model_str))
-        elif jornada == '17':
-            jornada17.append((1, local, visitante, mejor_resultado_model_str))
+        # También conseguimos el mejor resultado según el modelo    <---- ESTO SERÁ A LO QUE APOSTAREMOS
+        mejor_resultado_model = max(prob_local_model, prob_empate_model, prob_visita_model)
+        if mejor_resultado_model == prob_local_model:
+            mejor_resultado_model_str = 'Local'
+        elif mejor_resultado_model == prob_empate_model:
+            mejor_resultado_model_str = 'Empate'
         else:
-            pass  # Jornada no válida, no hacemos nada
-    else: # ponemos un 0 indicando que no se incluye el partido en el parley
-        if jornada == '1':
-            jornada1.append((0, local, visitante, 'No incluido'))
-        elif jornada == '2':
-            jornada2.append((0, local, visitante, 'No incluido'))
-        elif jornada == '3':
-            jornada3.append((0, local, visitante, 'No incluido'))
-        elif jornada == '4':
-            jornada4.append((0, local, visitante, 'No incluido'))
-        elif jornada == '5':
-            jornada5.append((0, local, visitante, 'No incluido'))
-        elif jornada == '6':
-            jornada6.append((0, local, visitante, 'No incluido'))
-        elif jornada == '7':
-            jornada7.append((0, local, visitante, 'No incluido'))
-        elif jornada == '8':
-            jornada8.append((0, local, visitante, 'No incluido'))
-        elif jornada == '9':
-            jornada9.append((0, local, visitante, 'No incluido'))
-        elif jornada == '10':
-            jornada10.append((0, local, visitante, 'No incluido'))
-        elif jornada == '11':
-            jornada11.append((0, local, visitante, 'No incluido'))
-        elif jornada == '12':
-            jornada12.append((0, local, visitante, 'No incluido'))
-        elif jornada == '13':
-            jornada13.append((0, local, visitante, 'No incluido'))
-        elif jornada == '14':
-            jornada14.append((0, local, visitante, 'No incluido'))
-        elif jornada == '15':
-            jornada15.append((0, local, visitante, 'No incluido'))
-        elif jornada == '16':
-            jornada16.append((0 ,local ,visitante , "No incluido"))
-        else:
-            pass  # Jornadas no válidas
+            mejor_resultado_model_str = 'Visita'
 
-# Imprimimos los partidos seleccionados para cada jornada
-print("\nJornada 1:", jornada1)
-print("Jornada 2:", jornada2)
-print("Jornada 3:", jornada3)
-print("Jornada 4:", jornada4)
-print("Jornada 5:", jornada5)
-print("Jornada 6:", jornada6)
-print("Jornada 7:", jornada7)
-print("Jornada 8:", jornada8)
-print("Jornada 9:", jornada9)
-print("Jornada 10:", jornada10)
-print("Jornada 11:", jornada11)
-print("Jornada 12:", jornada12)
-print("Jornada 13:", jornada13)
-print("Jornada 14:", jornada14)
-print("Jornada 15:", jornada15)
-print("Jornada 16:", jornada16)
-print("Jornada 17:", jornada17)
+        # Si la diferencia entre las probabilidades es menor al umbral, entonces incluimos el partido en el parley
+        if prob_local_diff < umbral_diferencia and prob_empate_diff < umbral_diferencia and prob_visita_diff < umbral_diferencia:
+            # Si la diferencia es pequeña, entonces incluimos el partido en el parley
+            jornada = df.iloc[i]['Jornada']
+            if jornada == '1':
+                jornada1.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '2':
+                jornada2.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '3':
+                jornada3.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '4':
+                jornada4.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '5':
+                jornada5.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '6':
+                jornada6.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '7':
+                jornada7.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '8':
+                jornada8.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '9':
+                jornada9.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '10':
+                jornada10.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '11':
+                jornada11.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '12':
+                jornada12.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '13':
+                jornada13.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '14':
+                jornada14.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '15':
+                jornada15.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '16':
+                jornada16.append((1, local, visitante, mejor_resultado_model_str))
+            elif jornada == '17':
+                jornada17.append((1, local, visitante, mejor_resultado_model_str))
+            else:
+                pass  # Jornada no válida, no hacemos nada
+        else: # ponemos un 0 indicando que no se incluye el partido en el parley
+            if jornada == '1':
+                jornada1.append((0, local, visitante, 'No incluido'))
+            elif jornada == '2':
+                jornada2.append((0, local, visitante, 'No incluido'))
+            elif jornada == '3':
+                jornada3.append((0, local, visitante, 'No incluido'))
+            elif jornada == '4':
+                jornada4.append((0, local, visitante, 'No incluido'))
+            elif jornada == '5':
+                jornada5.append((0, local, visitante, 'No incluido'))
+            elif jornada == '6':
+                jornada6.append((0, local, visitante, 'No incluido'))
+            elif jornada == '7':
+                jornada7.append((0, local, visitante, 'No incluido'))
+            elif jornada == '8':
+                jornada8.append((0, local, visitante, 'No incluido'))
+            elif jornada == '9':
+                jornada9.append((0, local, visitante, 'No incluido'))
+            elif jornada == '10':
+                jornada10.append((0, local, visitante, 'No incluido'))
+            elif jornada == '11':
+                jornada11.append((0, local, visitante, 'No incluido'))
+            elif jornada == '12':
+                jornada12.append((0, local, visitante, 'No incluido'))
+            elif jornada == '13':
+                jornada13.append((0, local, visitante, 'No incluido'))
+            elif jornada == '14':
+                jornada14.append((0, local, visitante, 'No incluido'))
+            elif jornada == '15':
+                jornada15.append((0, local, visitante, 'No incluido'))
+            elif jornada == '16':
+                jornada16.append((0 ,local ,visitante , "No incluido"))
+            else:
+                pass  # Jornadas no válidas
+    """"
+    # Imprimimos los partidos seleccionados para cada jornada
+    print("\nJornada 1:", jornada1)
+    print("Jornada 2:", jornada2)
+    print("Jornada 3:", jornada3)
+    print("Jornada 4:", jornada4)
+    print("Jornada 5:", jornada5)
+    print("Jornada 6:", jornada6)
+    print("Jornada 7:", jornada7)
+    print("Jornada 8:", jornada8)
+    print("Jornada 9:", jornada9)
+    print("Jornada 10:", jornada10)
+    print("Jornada 11:", jornada11)
+    print("Jornada 12:", jornada12)
+    print("Jornada 13:", jornada13)
+    print("Jornada 14:", jornada14)
+    print("Jornada 15:", jornada15)
+    print("Jornada 16:", jornada16)
+    print("Jornada 17:", jornada17)
+    """
+    return [jornada1, jornada2, jornada3, jornada4, jornada5, jornada6, jornada7, jornada8, jornada9, jornada10, jornada11, jornada12, jornada13, jornada14, jornada15, jornada16, jornada17]
 
+jornadas_partidos = define_parley_games(df) # jornadas_partidos[0] = jornada 1, jornadas_partidos[1] = jornada 2, etc.
 
 """""
 # CAMBIAR ESTA FUNCIÓN

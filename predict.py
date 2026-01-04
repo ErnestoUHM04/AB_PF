@@ -86,12 +86,13 @@ def predecir(local_input, visita_input):
 
     p_emp = (1 - p_local) * p_ev[0]
     p_vis = (1 - p_local) * p_ev[1]
-
+    """
+    # Imprimimos resultados
     print(f"\n {local} vs {visita}")
     print(f"Local:   {p_local*100:.1f}%")
     print(f"Empate: {p_emp*100:.1f}%")
     print(f"Visita: {p_vis*100:.1f}%")
-
+    """
     return p_local, p_emp, p_vis
 
 # Importamos el modelo ya guardado y lo usamos para predecir un partido
