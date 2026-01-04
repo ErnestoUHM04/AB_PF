@@ -61,7 +61,10 @@ features = [
     'diff_racha','diff_gf','diff_gc','diff_fuerza'
 ]
 
-def predecir(local, visita):
+def predecir(local_input, visita_input):
+    local = normalize_team(local_input) # Normalizar
+    visita = normalize_team(visita_input)
+
     hoy = pd.Timestamp.today() + pd.Timedelta(days=1)
 
     rl,gfl,gcl = metricas_previas(local, hoy, df)
@@ -88,6 +91,8 @@ def predecir(local, visita):
     print(f"Local:   {p_local*100:.1f}%")
     print(f"Empate: {p_emp*100:.1f}%")
     print(f"Visita: {p_vis*100:.1f}%")
+
+    return p_local, p_emp, p_vis
 
 # Importamos el modelo ya guardado y lo usamos para predecir un partido
 # modelo_bin = joblib.load('modelo_bin.joblib')
@@ -129,6 +134,8 @@ def normalize_team(name):
             return canonical
     return None
 
+"""
+
 # PRUEBA
 # predecir("Toluca","Tigres UANL")
 
@@ -146,3 +153,4 @@ while True:
         break
 
 predecir(local_normalized, away_normalized)
+"""

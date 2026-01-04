@@ -2,6 +2,8 @@
 # Hernández Martínez Ernesto Ulises
 
 import random
+import pandas as pd
+from predict import predecir
 
 # Usar el algoritmo de la colonia de abejas para encontrar el mejor parley posible para una jornada de la Liga MX.
 
@@ -16,7 +18,7 @@ import random
 # xi2 = 0 si se predice victoria local, 1 si se predice empate, 2 si se predice victoria visitante.
 
 # Una abeja no debe tener todos los partidos de la jornada obligatoriamente, puede tener solo algunos.
-partidos_min_jornada = 3 # Mínimo de partidos que debe tener una abeja para considerarse válida.  <-- CAMBIAR SI ESTOY MAL
+partidos_min_jornada = 2 # Mínimo de partidos que debe tener una abeja para considerarse válida.  <-- CAMBIAR SI ESTOY MAL
 
 # Hay 17 jornadas en la temporada regular de la Liga MX.
 jornadas = 17
@@ -26,7 +28,7 @@ jornadas = 17
 # M(momios de la apuesta) = M(p1) * M(p2) * ... * M(p9)
 
 # La función Fitness de una abeja será:
-# f = P(asertar todos los partidos del parley) / M(momios de la apuesta)
+# f = M(momios de la apuesta) / P(asertar todos los partidos del parley)
 
 # BUSCAMOS MAXIMIZAR LA FUNCIÓN FITNESS
 
@@ -51,7 +53,159 @@ max_capacity = 30
 
 ########################
 
+def leer_historial_liga():
+    # Cargar datos históricos de partidos de la Liga MX desde un archivo CSV
+    df = pd.read_csv('data/datos.csv')
+    return df
 
+# Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
+# Luego compararemos las dos predicciones
+df = leer_historial_liga()
+print(df.head()) # Verificamos que se haya cargado correctamente <-- Imprimer las primeras 5 lineas
+
+# Ahora usaremos estos vectores para guardar los partidos que usaremos en el parley para cada jornada
+jornada1 = [] # 0 si no se incluye el partido, 1 si se incluye
+jornada2 = []
+jornada3 = []
+jornada4 = []
+jornada5 = []
+jornada6 = []
+jornada7 = []
+jornada8 = []
+jornada9 = []
+jornada10 = []
+jornada11 = []
+jornada12 = []
+jornada13 = []
+jornada14 = []
+jornada15 = []
+jornada16 = []
+jornada17 = []
+
+umbral_diferencia = 0.15  # Umbral para considerar una diferencia significativa  <--- CAMBIAR ESTE VALOR SI ES NECESARIO
+
+for i in range(len(df)):
+    # Conseguir los nombres de los equipos y las probabilidades históricas
+    local = df.iloc[i]['Local']
+    visitante = df.iloc[i]['Visitante']
+    prob_local_histo = df.iloc[i]['PG_L']
+    prob_empate_histo = df.iloc[i]['PG_E']
+    prob_visita_histo = df.iloc[i]['PG_V']
+    # Usar el modelo para predecir las probabilidades
+    prob_local_model, prob_empate_model, prob_visita_model = predecir(local, visitante)
+
+    # Comparamos las probabilidaddes
+    prob_local_diff = abs(prob_local_histo - prob_local_model)
+    prob_empate_diff = abs(prob_empate_histo - prob_empate_model)
+    prob_visita_diff = abs(prob_visita_histo - prob_visita_model)
+
+    # También conseguimos el mejor resultado según el modelo    <---- ESTO SERÁ A LO QUE APOSTAREMOS
+    mejor_resultado_model = max(prob_local_model, prob_empate_model, prob_visita_model)
+    if mejor_resultado_model == prob_local_model:
+        mejor_resultado_model_str = 'Local'
+    elif mejor_resultado_model == prob_empate_model:
+        mejor_resultado_model_str = 'Empate'
+    else:
+        mejor_resultado_model_str = 'Visita'
+
+    # Si la diferencia entre las probabilidades es menor al umbral, entonces incluimos el partido en el parley
+    if prob_local_diff < umbral_diferencia and prob_empate_diff < umbral_diferencia and prob_visita_diff < umbral_diferencia:
+        # Si la diferencia es pequeña, entonces incluimos el partido en el parley
+        jornada = df.iloc[i]['Jornada']
+        if jornada == '1':
+            jornada1.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '2':
+            jornada2.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '3':
+            jornada3.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '4':
+            jornada4.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '5':
+            jornada5.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '6':
+            jornada6.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '7':
+            jornada7.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '8':
+            jornada8.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '9':
+            jornada9.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '10':
+            jornada10.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '11':
+            jornada11.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '12':
+            jornada12.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '13':
+            jornada13.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '14':
+            jornada14.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '15':
+            jornada15.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '16':
+            jornada16.append((1, local, visitante, mejor_resultado_model_str))
+        elif jornada == '17':
+            jornada17.append((1, local, visitante, mejor_resultado_model_str))
+        else:
+            pass  # Jornada no válida, no hacemos nada
+    else: # ponemos un 0 indicando que no se incluye el partido en el parley
+        if jornada == '1':
+            jornada1.append((0, local, visitante, 'No incluido'))
+        elif jornada == '2':
+            jornada2.append((0, local, visitante, 'No incluido'))
+        elif jornada == '3':
+            jornada3.append((0, local, visitante, 'No incluido'))
+        elif jornada == '4':
+            jornada4.append((0, local, visitante, 'No incluido'))
+        elif jornada == '5':
+            jornada5.append((0, local, visitante, 'No incluido'))
+        elif jornada == '6':
+            jornada6.append((0, local, visitante, 'No incluido'))
+        elif jornada == '7':
+            jornada7.append((0, local, visitante, 'No incluido'))
+        elif jornada == '8':
+            jornada8.append((0, local, visitante, 'No incluido'))
+        elif jornada == '9':
+            jornada9.append((0, local, visitante, 'No incluido'))
+        elif jornada == '10':
+            jornada10.append((0, local, visitante, 'No incluido'))
+        elif jornada == '11':
+            jornada11.append((0, local, visitante, 'No incluido'))
+        elif jornada == '12':
+            jornada12.append((0, local, visitante, 'No incluido'))
+        elif jornada == '13':
+            jornada13.append((0, local, visitante, 'No incluido'))
+        elif jornada == '14':
+            jornada14.append((0, local, visitante, 'No incluido'))
+        elif jornada == '15':
+            jornada15.append((0, local, visitante, 'No incluido'))
+        elif jornada == '16':
+            jornada16.append((0 ,local ,visitante , "No incluido"))
+        else:
+            pass  # Jornadas no válidas
+
+# Imprimimos los partidos seleccionados para cada jornada
+print("\nJornada 1:", jornada1)
+print("Jornada 2:", jornada2)
+print("Jornada 3:", jornada3)
+print("Jornada 4:", jornada4)
+print("Jornada 5:", jornada5)
+print("Jornada 6:", jornada6)
+print("Jornada 7:", jornada7)
+print("Jornada 8:", jornada8)
+print("Jornada 9:", jornada9)
+print("Jornada 10:", jornada10)
+print("Jornada 11:", jornada11)
+print("Jornada 12:", jornada12)
+print("Jornada 13:", jornada13)
+print("Jornada 14:", jornada14)
+print("Jornada 15:", jornada15)
+print("Jornada 16:", jornada16)
+print("Jornada 17:", jornada17)
+
+
+"""""
+# CAMBIAR ESTA FUNCIÓN
 def create_worker_bee(lower_bounds, upper_bounds):
     bee = []
     for i in range(n):
@@ -61,6 +215,7 @@ def create_worker_bee(lower_bounds, upper_bounds):
         bee.append(xi)
     return bee
 
+# CAMBIAR ESTA FUNCIÓN
 def create_worker_bee_new(lower_bounds, upper_bounds):
     bee = []
     for i in range(n):
@@ -68,6 +223,7 @@ def create_worker_bee_new(lower_bounds, upper_bounds):
         bee.append(xi)
     return bee
 
+# CAMBIAR ESTA FUNCIÓN
 def create_worker_bees(lower_bounds, upper_bounds, values, weights, print_progress=True):
     # Create worker bees
     worker_bees = []
@@ -88,6 +244,7 @@ def create_worker_bees(lower_bounds, upper_bounds, values, weights, print_progre
         worker_bees.append((worker_bee, fitness_value, weight_value, 0)) # (bee, fitness, weight, limit_counter)
     return worker_bees
 
+# CAMBIAR ESTA FUNCIÓN
 def create_observer_bee(acumulated_probabilities, worker_bees, lower_bounds, upper_bounds):
     # We select a worker bee based on the accumulated probabilities
     roullete_wheel_index = roullete_wheel(acumulated_probabilities)
@@ -114,6 +271,7 @@ def create_observer_bee(acumulated_probabilities, worker_bees, lower_bounds, upp
     # We return both the bee and the index of the selected worker bee for reference
     return ((selected_bee, roullete_wheel_index)) # (observer bee, index of the selected worker bee)
 
+# CAMBIAR ESTA FUNCIÓN
 def worker_bee_search(i, bee, lower_bounds, upper_bounds):
     # First, we select a dimension to modify
     j = random.randint(0, n - 1)
@@ -143,14 +301,17 @@ def roullete_wheel(acumulated_probabilities):
             return i
     return len(acumulated_probabilities) - 1
 
+# CAMBIAR ESTA FUNCIÓN
 def fitness(bee, values):
     total_value = sum(bee[i] * values[i] for i in range(n))
     return total_value
 
+# CAMBIAR ESTA FUNCIÓN.    <--- Posbilemente eliminar
 def weight(bee, weights):
     total_weight = sum(bee[i] * weights[i] for i in range(n))
     return total_weight
 
+# CAMBIAR ESTA FUNCIÓN
 def calculate_acumulated_probabilities(probabilities):
     # Create acumulated probabilities
     acumulated_probabilities = []
@@ -160,6 +321,7 @@ def calculate_acumulated_probabilities(probabilities):
         acumulated_probabilities.append(acum_sum)
     return acumulated_probabilities
 
+# CAMBIAR ESTA FUNCIÓN
 def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, values, weights, print_progress=True):
     HoF = [] # Hall of Fame
     iteration = 0
@@ -251,21 +413,20 @@ def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, values, weights, 
             break
     return worker_bees, HoF
 
+# CAMBIAR ESTA FUNCIÓN
 def print_hall_of_fame(HoF):
     print("\n=== Final Best Solutions in Hall of Fame ===")
     for i, bee in enumerate(HoF):
         print("Iteration", i + 1, "-> Bee:", bee[0], "\tValue:", bee[1], "\tWeight:", bee[2])
 
 
-lower_bounds = [0, 3, 0, 2, 0, 0, 0]
-upper_bounds = [10, 10, 10, 10, 10, 10, 10]
-#upper_bounds = [9, 9, 9, 9, 9, 9, 9]
+lower_bounds = [0, 0, 0, 0, 0, 0, 0, 0, 0] # <------------ Para este problema, CAMBIAR ESTOS VALORES
+upper_bounds = [2, 2, 2, 2, 2, 2, 2, 2, 2] # Irán del 0 al 2 (0 = gana local, 1 = empate, 2 = gana visitante)
 
-values = [10, 8, 12, 6, 3, 2, 2]
-weights = [4, 2, 5, 5, 2, 1.5, 1]
 
 worker_bees = create_worker_bees(lower_bounds, upper_bounds, values, weights, print_progress = False)
 
 final_worker_bees, HoF = beehive_algorithm(worker_bees, lower_bounds, upper_bounds, values, weights, print_progress = False)
 
 print_hall_of_fame(HoF)
+"""
