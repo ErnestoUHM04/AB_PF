@@ -17,20 +17,6 @@ from predict import predecir
 # xi1 = 1 si se incluye el partido en el parley, 0 si no se incluye.
 # xi2 = 0 si se predice victoria local, 1 si se predice empate, 2 si se predice victoria visitante.
 
-# Una abeja no debe tener todos los partidos de la jornada obligatoriamente, puede tener solo algunos.
-partidos_min_jornada = 2 # Mínimo de partidos que debe tener una abeja para considerarse válida.  <-- CAMBIAR SI ESTOY MAL
-
-# Hay 17 jornadas en la temporada regular de la Liga MX.
-jornadas = 17
-
-# P(asertar todos los partidos del parley) = P(p1) * P(p2) * ... * P(p9) <-- Usar el modelo entrenado previamente para obtener esta probabilidad.
-
-# M(momios de la apuesta) = M(p1) * M(p2) * ... * M(p9)
-
-# La función Fitness de una abeja será:
-# f = M(momios de la apuesta) / P(asertar todos los partidos del parley)
-
-# BUSCAMOS MAXIMIZAR LA FUNCIÓN FITNESS
 
 ###### Parameters ###### <----- para un BeeHive Algorithm
 # Número de variables
@@ -50,6 +36,8 @@ limit = (beehive_size * n) // 2
 max_iterations = 50
 # Capacidad de la mochila : 30 lb.     <----- ESTE VALOR SE VA A CAMBIAR O ELIMINAR
 max_capacity = 30
+# Una abeja no debe tener todos los partidos de la jornada obligatoriamente, puede tener solo algunos.
+partidos_min_jornada = 2 # Mínimo de partidos que debe tener una abeja para considerarse válida.  <-- CAMBIAR SI ESTOY MAL
 
 ########################
 
@@ -280,12 +268,13 @@ def create_worker_bee(lower_bounds, upper_bounds, jornada, n):
 
     return bee
 
-# CAMBIAR ESTA FUNCIÓN
-def fitness(momios_combinados, prob_acertar):
+def fitness(momios_combinados, prob_acertar): # BUSCAMOS MAXIMIZAR LA FUNCIÓN FITNESS
+    # La función Fitness de una abeja será:
+    # f = M(momios de la apuesta) / P(asertar todos los partidos del parley)
     fitness_value = momios_combinados / prob_acertar # Caso para MAXIMIZACIÓN
     return fitness_value
 
-def get_momios(bee, jornada, n):
+def get_momios(bee, jornada, n): # M(momios de la apuesta) = M(p1) * M(p2) * ... * M(p9)
     momios_combinados = 1.0
     for i in range(n):
         apuesta = bee[i] # esta puede ser 0, 1, 2, o -1
@@ -303,7 +292,7 @@ def get_momios(bee, jornada, n):
         momios_combinados *= momio
     return momios_combinados
 
-def get_prob_acertar(bee, jornada, n):
+def get_prob_acertar(bee, jornada, n): # P(asertar todos los partidos del parley) = P(p1) * P(p2) * ... * P(p9) <-- Usar el modelo entrenado previamente para obtener esta probabilidad.
     prob_acertar = 1.0
     for i in range(n):
         apuesta = bee[i] # esta puede ser 0, 1, 2, o -1
@@ -321,6 +310,8 @@ def get_prob_acertar(bee, jornada, n):
         prob_acertar *= proba
     return prob_acertar
 
+
+# ===================================== MAIN PROGRAM ==========================================
 # Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
 df = leer_historial_liga() # Luego compararemos las dos predicciones
 # print(df.head()) # Verificamos que se haya cargado correctamente <-- Imprimer las primeras 5 lineas
