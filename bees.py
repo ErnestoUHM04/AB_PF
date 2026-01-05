@@ -34,7 +34,7 @@ jornadas = 17
 
 ###### Parameters ###### <----- para un BeeHive Algorithm
 # Número de variables
-n = 9
+n = 9  #.  <--- PUEDE VARIAR DENTRO DEL PROGRAMA
 # Tamaño del enjambre = 40
 beehive_size = 40
 # abeja obreras = 20
@@ -198,31 +198,36 @@ def define_parley_games(df, umbral_diferencia = 0.15):
             else:
                 pass  # Jornadas no válidas
 
+    def format_floats_in_tuple(tup):
+        return tuple(f"{x:.3f}" if isinstance(x, float) else x for x in tup)
+
+    def format_jornada(jornada):
+        return [format_floats_in_tuple(t) for t in jornada]
+
     # Imprimimos los partidos seleccionados para cada jornada
-    print("\nJornada 1:", jornada1)
-    print("Jornada 2:", jornada2)
-    print("Jornada 3:", jornada3)
-    print("Jornada 4:", jornada4)
-    print("Jornada 5:", jornada5)
-    print("Jornada 6:", jornada6)
-    print("Jornada 7:", jornada7)
-    print("Jornada 8:", jornada8)
-    print("Jornada 9:", jornada9)
-    print("Jornada 10:", jornada10)
-    print("Jornada 11:", jornada11)
-    print("Jornada 12:", jornada12)
-    print("Jornada 13:", jornada13)
-    print("Jornada 14:", jornada14)
-    print("Jornada 15:", jornada15)
-    print("Jornada 16:", jornada16)
-    print("Jornada 17:", jornada17)
-    print("Play In's:", play_in)
-    print("Quarter Finals:", quarter_finals)
-    print("Semi Finals:", semi_finals)
+    print(f"Jornada 1: {format_jornada(jornada1)}\n")
+    print(f"Jornada 2: {format_jornada(jornada2)}\n")
+    print(f"Jornada 3: {format_jornada(jornada3)}\n")
+    print(f"Jornada 4: {format_jornada(jornada4)}\n")
+    print(f"Jornada 5: {format_jornada(jornada5)}\n")
+    print(f"Jornada 6: {format_jornada(jornada6)}\n")
+    print(f"Jornada 7: {format_jornada(jornada7)}\n")
+    print(f"Jornada 8: {format_jornada(jornada8)}\n")
+    print(f"Jornada 9: {format_jornada(jornada9)}\n")
+    print(f"Jornada 10: {format_jornada(jornada10)}\n")
+    print(f"Jornada 11: {format_jornada(jornada11)}\n")
+    print(f"Jornada 12: {format_jornada(jornada12)}\n")
+    print(f"Jornada 13: {format_jornada(jornada13)}\n")
+    print(f"Jornada 14: {format_jornada(jornada14)}\n")
+    print(f"Jornada 15: {format_jornada(jornada15)}\n")
+    print(f"Jornada 16: {format_jornada(jornada16)}\n")
+    print(f"Jornada 17: {format_jornada(jornada17)}\n")
+    print(f"Play In's: {format_jornada(play_in)}\n")
+    print(f"Quarter Finals: {format_jornada(quarter_finals)}\n")
+    print(f"Semi Finals: {format_jornada(semi_finals)}\n")
 
     return [jornada1, jornada2, jornada3, jornada4, jornada5, jornada6, jornada7, jornada8, jornada9, jornada10, jornada11, jornada12, jornada13, jornada14, jornada15, jornada16, jornada17, play_in, quarter_finals, semi_finals]
 
-# CAMBIAR ESTA FUNCIÓN
 def create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress=True):
     n = len(jornada)
     # Extraer los valores de la jornada
@@ -250,13 +255,29 @@ def create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress=True)
 def create_worker_bee(lower_bounds, upper_bounds, jornada, n):
     bee = []
     for i in range(n):
-        if jornada[i][0] == 0: # osea no se incluye
+        if jornada[i][0] == 0:  # No se incluye
             bee.append(-1)
         else:
-            r1 = random.random() # Número aleatorio entre 0 y 1
+            r1 = random.random()  # Número aleatorio entre 0 y 1
             xi = lower_bounds[i] + r1 * (upper_bounds[i] - lower_bounds[i])
-            xi = round(xi) # Redondear al entero más cercano
+            xi = round(xi)  # Redondear al entero más cercano
             bee.append(xi)
+
+    # Contar partidos incluidos
+    included = sum(1 for x in bee if x != -1)
+
+    # Si no hay suficientes partidos incluidos, forzar algunos -1 a ser incluidos
+    if included < partidos_min_jornada:
+        excluded_indices = [i for i, x in enumerate(bee) if x == -1]
+        if excluded_indices:
+            # Elegir aleatoriamente cuántos incluir para llegar al mínimo
+            to_include = min(len(excluded_indices), partidos_min_jornada - included)
+            selected = random.sample(excluded_indices, to_include)
+            for idx in selected:
+                r1 = random.random()
+                xi = lower_bounds[idx] + r1 * (upper_bounds[idx] - lower_bounds[idx])
+                bee[idx] = round(xi)
+
     return bee
 
 # CAMBIAR ESTA FUNCIÓN
