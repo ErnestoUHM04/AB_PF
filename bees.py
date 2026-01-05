@@ -58,11 +58,6 @@ def leer_historial_liga():
     df = pd.read_csv('data/datos_normalizados.csv')
     return df
 
-# Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
-# Luego compararemos las dos predicciones
-df = leer_historial_liga()
-# print(df.head()) # Verificamos que se haya cargado correctamente <-- Imprimer las primeras 5 lineas
-
 def define_parley_games(df, umbral_diferencia = 0.15):
     # Ahora usaremos estos vectores para guardar los partidos que usaremos en el parley para cada jornada
     jornada1 = [] # 0 si no se incluye el partido, 1 si se incluye
@@ -103,9 +98,9 @@ def define_parley_games(df, umbral_diferencia = 0.15):
         prob_empate_diff = abs(prob_empate_histo - prob_empate_model)
         prob_visita_diff = abs(prob_visita_histo - prob_visita_model)
 
-        prob_local_promedio = (prob_local_histo + prob_local_model) / 2
-        prob_empate_promedio = (prob_empate_histo + prob_empate_model)
-        prob_visita_promedio = (prob_visita_histo + prob_visita_model) / 2
+        prob_local_promedio = float((prob_local_histo + prob_local_model) / 2)
+        prob_empate_promedio = float((prob_empate_histo + prob_empate_model) / 2)
+        prob_visita_promedio = float((prob_visita_histo + prob_visita_model) / 2)
 
         # Guardamos los momios de los partidos elegidos    <--- ESTO SERÁ PARA LA FUNCIÓN FITNESS
         momio_L = float(df.iloc[i]['Momio_L_norm'])
@@ -225,51 +220,106 @@ def define_parley_games(df, umbral_diferencia = 0.15):
     print("Quarter Finals:", quarter_finals)
     print("Semi Finals:", semi_finals)
 
-    return [jornada1, jornada2, jornada3, jornada4, jornada5, jornada6, jornada7, jornada8, jornada9, jornada10, jornada11, jornada12, jornada13, jornada14, jornada15, jornada16, jornada17]
-
-jornadas_partidos = define_parley_games(df) # jornadas_partidos[0] = jornada 1, jornadas_partidos[1] = jornada 2, etc.
-
-
-"""""
-# CAMBIAR ESTA FUNCIÓN
-def create_worker_bee(lower_bounds, upper_bounds):
-    bee = []
-    for i in range(n):
-        r1 = random.random() # Número aleatorio entre 0 y 1
-        xi = lower_bounds[i] + r1 * (upper_bounds[i] - lower_bounds[i])
-        xi = round(xi) # Redondear al entero más cercano
-        bee.append(xi)
-    return bee
+    return [jornada1, jornada2, jornada3, jornada4, jornada5, jornada6, jornada7, jornada8, jornada9, jornada10, jornada11, jornada12, jornada13, jornada14, jornada15, jornada16, jornada17, play_in, quarter_finals, semi_finals]
 
 # CAMBIAR ESTA FUNCIÓN
-def create_worker_bee_new(lower_bounds, upper_bounds):
-    bee = []
-    for i in range(n):
-        xi = random.randint(lower_bounds[i], upper_bounds[i])
-        bee.append(xi)
-    return bee
+def create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress=True):
+    n = len(jornada)
+    # Extraer los valores de la jornada
+    # (partido1, partido2, ..., partido9)                   <-- estructura de la jornada   (no siempre son 9 partidos)
+    # (1, local, visitante, prob_local_promedio, prob_visita_promedio, prob_empate_promedio, momio_L, momio_E, momio_V) <-- estructura de cada partido
+    #. 0.    1.     2.             3.                      4.                 5.               6.        7.       8.
 
-# CAMBIAR ESTA FUNCIÓN
-def create_worker_bees(lower_bounds, upper_bounds, values, weights, print_progress=True):
     # Create worker bees
     worker_bees = []
     for i in range(worker_bees_count):
-        while True:
-            worker_bee = create_worker_bee(lower_bounds, upper_bounds)
-            #worker_bee = create_worker_bee_new(lower_bounds, upper_bounds)
+        worker_bee = create_worker_bee(lower_bounds, upper_bounds, jornada, n) # Indiviual bee.    devuelve una lista de => 0, 1, o 2     (local, empate, o visitante)
+        # (0, 1, -1, 0, -1, 2, 0, 1, 2), donde los numeros -1 significan que no se incluye en el parley al individuo
+        momios_combinados = get_momios(worker_bee, jornada, n)
 
-            fitness_value = fitness(worker_bee, values)
-            weight_value = weight(worker_bee, weights)
+        prob_acertar = get_prob_acertar(worker_bee, jornada, n)
 
-            if weight_value <= max_capacity:
-                break
+        fitness_value = fitness(momios_combinados, prob_acertar) # CONSEGUIR ESOS DOS VALORES
 
         if print_progress:
-            print("Worker Bee:", worker_bee, "\tValue:", fitness_value, "\tWeight:", weight_value)
+            print("Worker Bee:", worker_bee, "\tValue:", fitness_value)
         # Remember initialization of the limit counter for each worker bee
-        worker_bees.append((worker_bee, fitness_value, weight_value, 0)) # (bee, fitness, weight, limit_counter)
+        worker_bees.append((worker_bee, fitness_value, 0)) # (bee, fitness, limit_counter)
     return worker_bees
 
+def create_worker_bee(lower_bounds, upper_bounds, jornada, n):
+    bee = []
+    for i in range(n):
+        if jornada[i][0] == 0: # osea no se incluye
+            bee.append(-1)
+        else:
+            r1 = random.random() # Número aleatorio entre 0 y 1
+            xi = lower_bounds[i] + r1 * (upper_bounds[i] - lower_bounds[i])
+            xi = round(xi) # Redondear al entero más cercano
+            bee.append(xi)
+    return bee
+
+# CAMBIAR ESTA FUNCIÓN
+def fitness(momios_combinados, prob_acertar):
+    fitness_value = momios_combinados / prob_acertar # Caso para MAXIMIZACIÓN
+    return fitness_value
+
+def get_momios(bee, jornada, n):
+    momios_combinados = 1.0
+    for i in range(n):
+        apuesta = bee[i] # esta puede ser 0, 1, 2, o -1
+        if apuesta == 0:
+            # apuesta por local
+            momio = jornada[i][6]
+        elif apuesta == 1:
+            # apuesta por empate
+            momio = jornada[i][7]
+        elif apuesta == 2:
+            # apuesta por visitante
+            momio = jornada[i][8]
+        else:
+            pass
+        momios_combinados *= momio
+    return momios_combinados
+
+def get_prob_acertar(bee, jornada, n):
+    prob_acertar = 1.0
+    for i in range(n):
+        apuesta = bee[i] # esta puede ser 0, 1, 2, o -1
+        if apuesta == 0:
+            # apuesta por local
+            proba = jornada[i][3]
+        elif apuesta == 1:
+            # apuesta por empate
+            proba = jornada[i][5]
+        elif apuesta == 2:
+            # apuesta por visitante
+            proba = jornada[i][4]
+        else:
+            pass
+        prob_acertar *= proba
+    return prob_acertar
+
+# Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
+df = leer_historial_liga() # Luego compararemos las dos predicciones
+# print(df.head()) # Verificamos que se haya cargado correctamente <-- Imprimer las primeras 5 lineas
+
+jornadas_partidos = define_parley_games(df) # jornadas_partidos[0] = jornada 1, jornadas_partidos[1] = jornada 2, etc.
+
+lower_bounds = [0, 0, 0, 0, 0, 0, 0, 0, 0] # <------------ Para este problema, CAMBIAR ESTOS VALORES
+upper_bounds = [2, 2, 2, 2, 2, 2, 2, 2, 2] # Irán del 0 al 2 (0 = gana local, 1 = empate, 2 = gana visitante)
+
+i = 1
+for jornada in jornadas_partidos:
+    print("Jornada ", i)
+    i += 1
+    HoF = [] # Hall of Fame
+    worker_bees = create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress = True)
+    #final_worker_bees, HoF = beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress = False)
+
+
+
+"""
 # CAMBIAR ESTA FUNCIÓN
 def create_observer_bee(acumulated_probabilities, worker_bees, lower_bounds, upper_bounds):
     # We select a worker bee based on the accumulated probabilities
@@ -327,10 +377,7 @@ def roullete_wheel(acumulated_probabilities):
             return i
     return len(acumulated_probabilities) - 1
 
-# CAMBIAR ESTA FUNCIÓN
-def fitness(bee, values):
-    total_value = sum(bee[i] * values[i] for i in range(n))
-    return total_value
+
 
 # CAMBIAR ESTA FUNCIÓN.    <--- Posbilemente eliminar
 def weight(bee, weights):
@@ -448,7 +495,6 @@ def print_hall_of_fame(HoF):
 
 lower_bounds = [0, 0, 0, 0, 0, 0, 0, 0, 0] # <------------ Para este problema, CAMBIAR ESTOS VALORES
 upper_bounds = [2, 2, 2, 2, 2, 2, 2, 2, 2] # Irán del 0 al 2 (0 = gana local, 1 = empate, 2 = gana visitante)
-
 
 worker_bees = create_worker_bees(lower_bounds, upper_bounds, values, weights, print_progress = False)
 
