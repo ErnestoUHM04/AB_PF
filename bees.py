@@ -184,7 +184,7 @@ def define_parley_games(df, umbral_diferencia = 0.15):
                 jornada16.append((0 ,local ,visitante , "No incluido"))
             else:
                 pass  # Jornadas no válidas
-    """"
+
     # Imprimimos los partidos seleccionados para cada jornada
     print("\nJornada 1:", jornada1)
     print("Jornada 2:", jornada2)
@@ -203,7 +203,7 @@ def define_parley_games(df, umbral_diferencia = 0.15):
     print("Jornada 15:", jornada15)
     print("Jornada 16:", jornada16)
     print("Jornada 17:", jornada17)
-    """
+
     return [jornada1, jornada2, jornada3, jornada4, jornada5, jornada6, jornada7, jornada8, jornada9, jornada10, jornada11, jornada12, jornada13, jornada14, jornada15, jornada16, jornada17]
 
 jornadas_partidos = define_parley_games(df) # jornadas_partidos[0] = jornada 1, jornadas_partidos[1] = jornada 2, etc.
