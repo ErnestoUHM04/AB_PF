@@ -17,7 +17,6 @@ from predict import predecir
 # xi1 = 1 si se incluye el partido en el parley, 0 si no se incluye.
 # xi2 = 0 si se predice victoria local, 1 si se predice empate, 2 si se predice victoria visitante.
 
-
 ###### Parameters ###### <----- para un BeeHive Algorithm
 # Número de variables
 n = 9  #.  <--- PUEDE VARIAR DENTRO DEL PROGRAMA
@@ -46,7 +45,7 @@ def leer_historial_liga():
     df = pd.read_csv('data/datos_normalizados.csv')
     return df
 
-def define_parley_games(df, umbral_diferencia = 0.15):
+def define_parley_games(df, umbral_diferencia = 0.15, print_progress = False):
     # Ahora usaremos estos vectores para guardar los partidos que usaremos en el parley para cada jornada
     jornada1 = [] # 0 si no se incluye el partido, 1 si se incluye
     jornada2 = []
@@ -192,27 +191,28 @@ def define_parley_games(df, umbral_diferencia = 0.15):
     def format_jornada(jornada):
         return [format_floats_in_tuple(t) for t in jornada]
 
-    # Imprimimos los partidos seleccionados para cada jornada
-    print(f"Jornada 1: {format_jornada(jornada1)}\n")
-    print(f"Jornada 2: {format_jornada(jornada2)}\n")
-    print(f"Jornada 3: {format_jornada(jornada3)}\n")
-    print(f"Jornada 4: {format_jornada(jornada4)}\n")
-    print(f"Jornada 5: {format_jornada(jornada5)}\n")
-    print(f"Jornada 6: {format_jornada(jornada6)}\n")
-    print(f"Jornada 7: {format_jornada(jornada7)}\n")
-    print(f"Jornada 8: {format_jornada(jornada8)}\n")
-    print(f"Jornada 9: {format_jornada(jornada9)}\n")
-    print(f"Jornada 10: {format_jornada(jornada10)}\n")
-    print(f"Jornada 11: {format_jornada(jornada11)}\n")
-    print(f"Jornada 12: {format_jornada(jornada12)}\n")
-    print(f"Jornada 13: {format_jornada(jornada13)}\n")
-    print(f"Jornada 14: {format_jornada(jornada14)}\n")
-    print(f"Jornada 15: {format_jornada(jornada15)}\n")
-    print(f"Jornada 16: {format_jornada(jornada16)}\n")
-    print(f"Jornada 17: {format_jornada(jornada17)}\n")
-    print(f"Play In's: {format_jornada(play_in)}\n")
-    print(f"Quarter Finals: {format_jornada(quarter_finals)}\n")
-    print(f"Semi Finals: {format_jornada(semi_finals)}\n")
+    if print_progress:
+        # Imprimimos los partidos seleccionados para cada jornada
+        print(f"Jornada 1: {format_jornada(jornada1)}\n")
+        print(f"Jornada 2: {format_jornada(jornada2)}\n")
+        print(f"Jornada 3: {format_jornada(jornada3)}\n")
+        print(f"Jornada 4: {format_jornada(jornada4)}\n")
+        print(f"Jornada 5: {format_jornada(jornada5)}\n")
+        print(f"Jornada 6: {format_jornada(jornada6)}\n")
+        print(f"Jornada 7: {format_jornada(jornada7)}\n")
+        print(f"Jornada 8: {format_jornada(jornada8)}\n")
+        print(f"Jornada 9: {format_jornada(jornada9)}\n")
+        print(f"Jornada 10: {format_jornada(jornada10)}\n")
+        print(f"Jornada 11: {format_jornada(jornada11)}\n")
+        print(f"Jornada 12: {format_jornada(jornada12)}\n")
+        print(f"Jornada 13: {format_jornada(jornada13)}\n")
+        print(f"Jornada 14: {format_jornada(jornada14)}\n")
+        print(f"Jornada 15: {format_jornada(jornada15)}\n")
+        print(f"Jornada 16: {format_jornada(jornada16)}\n")
+        print(f"Jornada 17: {format_jornada(jornada17)}\n")
+        print(f"Play In's: {format_jornada(play_in)}\n")
+        print(f"Quarter Finals: {format_jornada(quarter_finals)}\n")
+        print(f"Semi Finals: {format_jornada(semi_finals)}\n")
 
     return [jornada1, jornada2, jornada3, jornada4, jornada5, jornada6, jornada7, jornada8, jornada9, jornada10, jornada11, jornada12, jornada13, jornada14, jornada15, jornada16, jornada17, play_in, quarter_finals, semi_finals]
 
@@ -310,29 +310,128 @@ def get_prob_acertar(bee, jornada, n): # P(asertar todos los partidos del parley
         prob_acertar *= proba
     return prob_acertar
 
-
-# ===================================== MAIN PROGRAM ==========================================
-# Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
-df = leer_historial_liga() # Luego compararemos las dos predicciones
-# print(df.head()) # Verificamos que se haya cargado correctamente <-- Imprimer las primeras 5 lineas
-
-jornadas_partidos = define_parley_games(df) # jornadas_partidos[0] = jornada 1, jornadas_partidos[1] = jornada 2, etc.
-
-lower_bounds = [0, 0, 0, 0, 0, 0, 0, 0, 0] # <------------ Para este problema, CAMBIAR ESTOS VALORES
-upper_bounds = [2, 2, 2, 2, 2, 2, 2, 2, 2] # Irán del 0 al 2 (0 = gana local, 1 = empate, 2 = gana visitante)
-
-i = 1
-for jornada in jornadas_partidos:
-    print("Jornada ", i)
-    i += 1
-    HoF = [] # Hall of Fame
-    worker_bees = create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress = True)
-    #final_worker_bees, HoF = beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress = False)
-
-
-
-"""
 # CAMBIAR ESTA FUNCIÓN
+def worker_bee_search(i, bee, lower_bounds, upper_bounds):
+    # First, we select a dimension to modify
+    j = random.randint(0, n - 1)
+    # Now, we select another bee to interact with
+    while True:
+        k = random.randint(0, worker_bees_count - 1)
+        if k != i: # Ensure we don't select the same bee
+            break
+    r2 = random.uniform(-1, 1) # Número aleatorio entre -1 y 1
+
+    # Modify the selected dimension
+    bee[j] = bee[j] + r2 * (bee[j] - worker_bees[k][0][j])
+
+    if bee[j] < lower_bounds[j]:
+        bee[j] = lower_bounds[j]
+    elif bee[j] > upper_bounds[j]:
+        bee[j] = upper_bounds[j]
+
+    bee[j] = round(bee[j]) # Redondear al entero más cercano <- NO FRACTIONS
+
+    return bee
+
+def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress=True):
+    HoF = [] # Hall of Fame
+    iteration = 0
+    n = len(jornada)
+    while True: # We will run this for max_iterations
+        iteration += 1
+        if print_progress:
+            print("\n--- Iteration", iteration, "---")
+        # We need them to work now :)
+        for i in range(worker_bees_count):
+            bee, fitness_value, limit_counter = worker_bees[i]
+
+            new_bee = worker_bee_search(i, bee.copy(), lower_bounds, upper_bounds)
+
+            momios_combinados = get_momios(new_bee, jornada, n)
+
+            prob_acertar = get_prob_acertar(new_bee, jornada, n)
+
+            new_fitness_value = fitness(momios_combinados, prob_acertar) # CONSEGUIR ESOS DOS VALORES
+
+            # Check if the new bee is better
+            if new_fitness_value > fitness_value: # If it is, we update the bee, and reset the counter
+                worker_bees[i] = (new_bee, new_fitness_value, 0) # Reset limit counter
+            else: # If not, we DO NOT update the bee, and we increment the counter by one
+                limit_counter += 1
+                worker_bees[i] = (bee, fitness_value, limit_counter)
+
+            if print_progress:
+                print("Worker Bee:", worker_bees[i][0], "\tFitness:", worker_bees[i][1])
+
+        # After they finish working, we evaluate their fitness and create probabilities for observer bees
+        # After the worker bee, create observer bees based on the best solutions found by worker bees
+        sum_fitness = sum(bee[1] for bee in worker_bees)
+        probabilities = [bee[1] / sum_fitness for bee in worker_bees]
+
+        acumulated_probabilities = calculate_acumulated_probabilities(probabilities)
+
+        # Create observer bees
+        observer_bees = [] # We select the best solutions found by observer_bees via the waggle dance
+        for i in range(observer_bees_count):
+
+            observer_bee, followed_bee_index = create_observer_bee(acumulated_probabilities, worker_bees, lower_bounds, upper_bounds)
+                # We evaluate the observer bee
+            momios_combinados = get_momios(observer_bee, jornada, n)
+
+            prob_acertar = get_prob_acertar(observer_bee, jornada, n)
+
+            fitness_value = fitness(momios_combinados, prob_acertar)
+
+            # We still check if the observer bee is better than the followed worker bee
+            followed_bee = worker_bees[followed_bee_index]
+            # if they are better than the worker bees, then we replace the worker bees with them
+            if fitness_value > followed_bee[1]: # If it is, we replace the worker bee with the observer bee
+                worker_bees[followed_bee_index] = (observer_bee, fitness_value, 0) # Reset limit counter
+            else:
+                # We do not replace the worker bee, just add one to the limit counter
+                worker_bees[followed_bee_index] = (followed_bee[0], followed_bee[1], followed_bee[2] + 1) # Increment limit counter +1
+
+            if print_progress:
+                print("Observer Bee:", observer_bee, "\tFitness:", fitness_value)
+            observer_bees.append((observer_bee, fitness_value))
+
+        # Now we check for any bee that has exceeded the limit and reinitialize it
+        for i in range(worker_bees_count):
+            bee, fitness_value, limit_counter = worker_bees[i]
+
+            # THIS IS THE EXPLORER BEE PHASE
+            if limit_counter >= limit:
+                # Reinitialize the bee
+                new_bee = create_worker_bee(lower_bounds, upper_bounds, jornada, n)
+
+                momios_combinados = get_momios(observer_bee, jornada, n)
+
+                prob_acertar = get_prob_acertar(observer_bee, jornada, n)
+
+                new_fitness_value = fitness(momios_combinados, prob_acertar)
+
+                worker_bees[i] = (new_bee, new_fitness_value, 0) # Reset limit counter
+                if print_progress:
+                    print("Reinitialized Bee:", new_bee, "\tFitness:", new_fitness_value)
+
+        # We can print the best solution found
+        best_bee = max(worker_bees, key=lambda x: x[1])
+        if print_progress:
+            print("Best Bee Found:", best_bee[0], "\tFitness:", best_bee[1])
+        HoF.append(best_bee)
+        if iteration >= max_iterations:
+            break
+    return worker_bees, HoF
+
+def calculate_acumulated_probabilities(probabilities):
+    # Create acumulated probabilities
+    acumulated_probabilities = []
+    acum_sum = 0
+    for p in probabilities:
+        acum_sum += p
+        acumulated_probabilities.append(acum_sum)
+    return acumulated_probabilities
+
 def create_observer_bee(acumulated_probabilities, worker_bees, lower_bounds, upper_bounds):
     # We select a worker bee based on the accumulated probabilities
     roullete_wheel_index = roullete_wheel(acumulated_probabilities)
@@ -359,29 +458,6 @@ def create_observer_bee(acumulated_probabilities, worker_bees, lower_bounds, upp
     # We return both the bee and the index of the selected worker bee for reference
     return ((selected_bee, roullete_wheel_index)) # (observer bee, index of the selected worker bee)
 
-# CAMBIAR ESTA FUNCIÓN
-def worker_bee_search(i, bee, lower_bounds, upper_bounds):
-    # First, we select a dimension to modify
-    j = random.randint(0, n - 1)
-    # Now, we select another bee to interact with
-    while True:
-        k = random.randint(0, worker_bees_count - 1)
-        if k != i: # Ensure we don't select the same bee
-            break
-    r2 = random.uniform(-1, 1) # Número aleatorio entre -1 y 1
-
-    # Modify the selected dimension
-    bee[j] = bee[j] + r2 * (bee[j] - worker_bees[k][0][j])
-
-    if bee[j] < lower_bounds[j]:
-        bee[j] = lower_bounds[j]
-    elif bee[j] > upper_bounds[j]:
-        bee[j] = upper_bounds[j]
-
-    bee[j] = round(bee[j]) # Redondear al entero más cercano <- NO FRACTIONS
-
-    return bee
-
 def roullete_wheel(acumulated_probabilities):
     r = random.random()
     for i, p in enumerate(acumulated_probabilities):
@@ -389,128 +465,27 @@ def roullete_wheel(acumulated_probabilities):
             return i
     return len(acumulated_probabilities) - 1
 
-
-
-# CAMBIAR ESTA FUNCIÓN.    <--- Posbilemente eliminar
-def weight(bee, weights):
-    total_weight = sum(bee[i] * weights[i] for i in range(n))
-    return total_weight
-
-# CAMBIAR ESTA FUNCIÓN
-def calculate_acumulated_probabilities(probabilities):
-    # Create acumulated probabilities
-    acumulated_probabilities = []
-    acum_sum = 0
-    for p in probabilities:
-        acum_sum += p
-        acumulated_probabilities.append(acum_sum)
-    return acumulated_probabilities
-
-# CAMBIAR ESTA FUNCIÓN
-def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, values, weights, print_progress=True):
-    HoF = [] # Hall of Fame
-    iteration = 0
-    while True: # We will run this for max_iterations
-        iteration += 1
-        if print_progress:
-            print("\n--- Iteration", iteration, "---")
-        # We need them to work now :)
-        for i in range(worker_bees_count):
-            bee, fitness_value, weight_value, limit_counter = worker_bees[i]
-            while True:
-                new_bee = worker_bee_search(i, bee.copy(), lower_bounds, upper_bounds)
-
-                new_fitness_value = fitness(new_bee, values)
-                new_weight_value = weight(new_bee, weights)
-
-                if new_weight_value <= max_capacity:
-                    break
-
-            # Check if the new bee is better
-            if new_fitness_value > fitness_value: # If it is, we update the bee, and reset the counter
-                worker_bees[i] = (new_bee, new_fitness_value, new_weight_value, 0) # Reset limit counter
-            else: # If not, we DO NOT update the bee, and we increment the counter by one
-                limit_counter += 1
-                worker_bees[i] = (bee, fitness_value, weight_value, limit_counter)
-
-            if print_progress:
-                print("Worker Bee:", worker_bees[i][0], "\tValue:", worker_bees[i][1], "\tWeight:", worker_bees[i][2])
-
-        # After they finish working, we evaluate their fitness and create probabilities for observer bees
-        # After the worker bee, create observer bees based on the best solutions found by worker bees
-        sum_fitness = sum(bee[1] for bee in worker_bees)
-        probabilities = [bee[1] / sum_fitness for bee in worker_bees]
-
-        acumulated_probabilities = calculate_acumulated_probabilities(probabilities)
-
-        # Create observer bees
-        observer_bees = [] # We select the best solutions found by observer_bees via the waggle dance
-        for i in range(observer_bees_count):
-            while True:
-                observer_bee, followed_bee_index = create_observer_bee(acumulated_probabilities, worker_bees, lower_bounds, upper_bounds)
-                # We evaluate the observer bee
-                fitness_value = fitness(observer_bee, values)
-                weight_value = weight(observer_bee, weights)
-
-                if weight_value <= max_capacity:
-                    break
-
-            # We still check if the observer bee is better than the followed worker bee
-            followed_bee = worker_bees[followed_bee_index]
-            # if they are better than the worker bees, then we replace the worker bees with them
-            if fitness_value > followed_bee[1]: # If it is, we replace the worker bee with the observer bee
-                worker_bees[followed_bee_index] = (observer_bee, fitness_value, weight_value, 0) # Reset limit counter
-            else:
-                # We do not replace the worker bee, just add one to the limit counter
-                worker_bees[followed_bee_index] = (followed_bee[0], followed_bee[1], followed_bee[2], followed_bee[3] + 1) # Increment limit counter +1
-
-            if print_progress:
-                print("Observer Bee:", observer_bee, "\tValue:", fitness_value, "\tWeight:", weight_value)
-            observer_bees.append((observer_bee, fitness_value, weight_value))
-
-        # Now we check for any bee that has exceeded the limit and reinitialize it
-        for i in range(worker_bees_count):
-            bee, fitness_value, weight_value, limit_counter = worker_bees[i]
-
-            # THIS IS THE EXPLORER BEE PHASE
-            if limit_counter >= limit:
-                # Reinitialize the bee
-                while True:
-                    new_bee = create_worker_bee(lower_bounds, upper_bounds)
-                    #new_bee = create_worker_bee_new(lower_bounds, upper_bounds)
-
-                    new_fitness_value = fitness(new_bee, values)
-                    new_weight_value = weight(new_bee, weights)
-
-                    if new_weight_value <= max_capacity:
-                        break
-
-                worker_bees[i] = (new_bee, new_fitness_value, new_weight_value, 0) # Reset limit counter
-                if print_progress:
-                    print("Reinitialized Bee:", new_bee, "\tValue:", new_fitness_value, "\tWeight:", new_weight_value)
-
-        # We can print the best solution found
-        best_bee = max(worker_bees, key=lambda x: x[1])
-        if print_progress:
-            print("Best Bee Found:", best_bee[0], "\tValue:", best_bee[1], "\tWeight:", best_bee[2])
-        HoF.append(best_bee)
-        if iteration >= max_iterations:
-            break
-    return worker_bees, HoF
-
-# CAMBIAR ESTA FUNCIÓN
 def print_hall_of_fame(HoF):
     print("\n=== Final Best Solutions in Hall of Fame ===")
     for i, bee in enumerate(HoF):
-        print("Iteration", i + 1, "-> Bee:", bee[0], "\tValue:", bee[1], "\tWeight:", bee[2])
+        print("Iteration", i + 1, "-> Bee:", bee[0], "\tFitness:", bee[1])
 
+# ===================================== MAIN PROGRAM ==========================================
+# Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
+df = leer_historial_liga() # Luego compararemos las dos predicciones
+# print(df.head()) # Verificamos que se haya cargado correctamente <-- Imprimer las primeras 5 lineas
 
-lower_bounds = [0, 0, 0, 0, 0, 0, 0, 0, 0] # <------------ Para este problema, CAMBIAR ESTOS VALORES
-upper_bounds = [2, 2, 2, 2, 2, 2, 2, 2, 2] # Irán del 0 al 2 (0 = gana local, 1 = empate, 2 = gana visitante)
+jornadas_partidos = define_parley_games(df) # jornadas_partidos[0] = jornada 1, jornadas_partidos[1] = jornada 2, etc.
 
-worker_bees = create_worker_bees(lower_bounds, upper_bounds, values, weights, print_progress = False)
-
-final_worker_bees, HoF = beehive_algorithm(worker_bees, lower_bounds, upper_bounds, values, weights, print_progress = False)
-
-print_hall_of_fame(HoF)
-"""
+i = 1
+for jornada in jornadas_partidos:
+    print("Jornada ", i)
+    i += 1
+    n = len(jornada)
+    lower_bounds = [0] * n # Se definen límites para cada uno de las jornadas, pues pueden tener más o menos partidos
+    upper_bounds = [2] * n
+    HoF = [] # Hall of Fame
+    worker_bees = create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress = False)
+    final_worker_bees, HoF = beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress = False)
+    print_hall_of_fame(HoF)
+    print("\n")
