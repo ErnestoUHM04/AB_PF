@@ -310,6 +310,23 @@ def get_prob_acertar(bee, jornada, n): # P(asertar todos los partidos del parley
         prob_acertar *= proba
     return prob_acertar
 
+def enforce_min_partidos(bee, lower_bounds, upper_bounds, min_partidos):
+    included = sum(1 for x in bee if x != -1)
+
+    if included >= min_partidos:
+        return bee
+
+    excluded = [i for i, x in enumerate(bee) if x == -1]
+    needed = min(min_partidos - included, len(excluded))
+
+    selected = random.sample(excluded, needed)
+    for idx in selected:
+        r1 = random.random()
+        xi = lower_bounds[idx] + r1 * (upper_bounds[idx] - lower_bounds[idx])
+        bee[idx] = round(xi)
+
+    return bee
+
 # CAMBIAR ESTA FUNCIÓN
 def worker_bee_search(i, bee, lower_bounds, upper_bounds):
     # First, we select a dimension to modify
@@ -330,6 +347,8 @@ def worker_bee_search(i, bee, lower_bounds, upper_bounds):
         bee[j] = upper_bounds[j]
 
     bee[j] = round(bee[j]) # Redondear al entero más cercano <- NO FRACTIONS
+    
+    bee = enforce_min_partidos(bee, lower_bounds, upper_bounds, partidos_min_jornada) #Asegurar mínimo de partidos incluidos
 
     return bee
 
@@ -454,6 +473,8 @@ def create_observer_bee(acumulated_probabilities, worker_bees, lower_bounds, upp
         selected_bee[j] = upper_bounds[j]
 
     selected_bee[j] = round(selected_bee[j]) # Get the closest integer <- NO FRACTIONS
+
+    selected_bee = enforce_min_partidos(selected_bee, lower_bounds, upper_bounds, partidos_min_jornada) #Asegurar mínimo de partidos incluidos
 
     # We return both the bee and the index of the selected worker bee for reference
     return ((selected_bee, roullete_wheel_index)) # (observer bee, index of the selected worker bee)
