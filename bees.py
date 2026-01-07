@@ -217,7 +217,7 @@ def define_parley_games(df, umbral_diferencia = 0.15, print_progress = False):
 
     return [jornada1, jornada2, jornada3, jornada4, jornada5, jornada6, jornada7, jornada8, jornada9, jornada10, jornada11, jornada12, jornada13, jornada14, jornada15, jornada16, jornada17, play_in, quarter_finals, semi_finals]
 
-def create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress=True):
+def create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress = True, maximize_proba = False):
     n = len(jornada)
     # Extraer los valores de la jornada
     # (partido1, partido2, ..., partido9)                   <-- estructura de la jornada   (no siempre son 9 partidos)
@@ -234,6 +234,9 @@ def create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress=True)
         prob_acertar = get_prob_acertar(worker_bee, jornada, n)
 
         fitness_value = fitness(momios_combinados, prob_acertar) # CONSEGUIR ESOS DOS VALORES
+
+        if maximize_proba:
+            fitness_value = prob_acertar * 100
 
         if print_progress:
             print("Worker Bee:", worker_bee, "\tValue:", fitness_value)
@@ -272,7 +275,8 @@ def create_worker_bee(lower_bounds, upper_bounds, jornada, n):
 def fitness(momios_combinados, prob_acertar): # BUSCAMOS MAXIMIZAR LA FUNCIÓN FITNESS
     # La función Fitness de una abeja será:
     # f = M(momios de la apuesta) / P(asertar todos los partidos del parley)
-    fitness_value = momios_combinados / prob_acertar # Caso para MAXIMIZACIÓN
+    # fitness_value = momios_combinados / prob_acertar # Caso para MAXIMIZACIÓN
+    fitness_value = momios_combinados * prob_acertar # <---- prueba
     return fitness_value
 
 def get_momios(bee, jornada, n): # M(momios de la apuesta) = M(p1) * M(p2) * ... * M(p9)
@@ -352,7 +356,7 @@ def worker_bee_search(i, bee, lower_bounds, upper_bounds):
 
     return bee
 
-def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress=True):
+def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress=True, maximize_proba = False):
     HoF = [] # Hall of Fame
     iteration = 0
     n = len(jornada)
@@ -371,6 +375,9 @@ def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_pr
             prob_acertar = get_prob_acertar(new_bee, jornada, n)
 
             new_fitness_value = fitness(momios_combinados, prob_acertar) # CONSEGUIR ESOS DOS VALORES
+
+            if maximize_proba:
+                new_fitness_value = prob_acertar * 100
 
             # Check if the new bee is better
             if new_fitness_value > fitness_value: # If it is, we update the bee, and reset the counter
@@ -401,6 +408,9 @@ def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_pr
 
             fitness_value = fitness(momios_combinados, prob_acertar)
 
+            if maximize_proba:
+                fitness_value = prob_acertar * 100
+
             # We still check if the observer bee is better than the followed worker bee
             followed_bee = worker_bees[followed_bee_index]
             # if they are better than the worker bees, then we replace the worker bees with them
@@ -428,6 +438,9 @@ def beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_pr
                 prob_acertar = get_prob_acertar(observer_bee, jornada, n)
 
                 new_fitness_value = fitness(momios_combinados, prob_acertar)
+
+                if maximize_proba:
+                    new_fitness_value = prob_acertar * 100
 
                 worker_bees[i] = (new_bee, new_fitness_value, 0) # Reset limit counter
                 if print_progress:
@@ -503,8 +516,9 @@ def print_best_individual(best_individual):
     print("Bee: ", best_individual[0], "\tFitness:", best_individual[1])
 
 def print_win_v_proba(momio, proba, initial_bet = 1000):
-    print("Con una apuesta inicial de $", initial_bet, "\tganarías $", momio * initial_bet)
-    print("La probabilidad de acertar esta apuesta es de ", proba * 100)
+    print("Con una apuesta inicial de $", initial_bet, "\tganarías $", (momio - 1) * initial_bet, " neto si aciertas todos")
+    print("Ganancia esperada: $", (proba * momio - 1) * initial_bet)
+    print("La probabilidad de acertar esta apuesta es de ", proba * 100, "%")
 
 # ===================================== MAIN PROGRAM ==========================================
 # Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
@@ -521,8 +535,8 @@ for jornada in jornadas_partidos:
     lower_bounds = [0] * n # Se definen límites para cada uno de las jornadas, pues pueden tener más o menos partidos
     upper_bounds = [2] * n
     HoF = [] # Hall of Fame
-    worker_bees = create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress = False)
-    final_worker_bees, HoF = beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress = False)
+    worker_bees = create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress = False, maximize_proba = False)
+    final_worker_bees, HoF = beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress = False, maximize_proba = False)
     best_bee = get_best_individual(HoF)
     print_best_individual(best_bee)
     best_bee_momio = get_momios(best_bee[0], jornada, n)
