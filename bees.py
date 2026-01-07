@@ -22,7 +22,7 @@ from predict import predecir
 # Número de variables
 n = 9  #.  <--- PUEDE VARIAR DENTRO DEL PROGRAMA
 # Tamaño del enjambre = 40
-beehive_size = 40
+beehive_size = 100
 # abeja obreras = 20
 worker_bees_count = beehive_size // 2
 #print("Número de abejas obreras:", worker_bees_count)
@@ -33,12 +33,9 @@ observer_bees_count = beehive_size // 2
 # limit = 5
 limit = (beehive_size * n) // 2
 # iteraciones = 50
-max_iterations = 50
-# Capacidad de la mochila : 30 lb.     <----- ESTE VALOR SE VA A CAMBIAR O ELIMINAR
-max_capacity = 30
+max_iterations = 5000
 # Una abeja no debe tener todos los partidos de la jornada obligatoriamente, puede tener solo algunos.
 partidos_min_jornada = 2 # Mínimo de partidos que debe tener una abeja para considerarse válida.  <-- CAMBIAR SI ESTOY MAL
-
 ########################
 
 def leer_historial_liga():
@@ -542,5 +539,5 @@ for jornada in jornadas_partidos:
     best_bee_momio = get_momios(best_bee[0], jornada, n)
     best_bee_proba = get_prob_acertar(best_bee[0], jornada, n)
     print_win_v_proba(best_bee_momio, best_bee_proba)
-    #print_hall_of_fame(HoF)
+    #print_hall_of_fame(HoF) # Demasiados valores, usar para DEBUGG
     print("\n")
