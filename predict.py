@@ -1,3 +1,6 @@
+# Cornejo Morales Paola
+# Hernández Martínez Ernesto Ulises
+
 import joblib
 import os
 import re

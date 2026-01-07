@@ -1,3 +1,6 @@
+# Cornejo Morales Paola
+# Hernández Martínez Ernesto Ulises
+
 import pandas as pd
 
 df = pd.read_csv('data/datos.csv')
