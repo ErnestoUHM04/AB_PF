@@ -18,6 +18,7 @@ from predict import predecir
 # xi2 = 0 si se predice victoria local, 1 si se predice empate, 2 si se predice victoria visitante.
 
 ###### Parameters ###### <----- para un BeeHive Algorithm
+
 # Número de variables
 n = 9  #.  <--- PUEDE VARIAR DENTRO DEL PROGRAMA
 # Tamaño del enjambre = 40
@@ -327,7 +328,6 @@ def enforce_min_partidos(bee, lower_bounds, upper_bounds, min_partidos):
 
     return bee
 
-# CAMBIAR ESTA FUNCIÓN
 def worker_bee_search(i, bee, lower_bounds, upper_bounds):
     # First, we select a dimension to modify
     j = random.randint(0, n - 1)
@@ -347,7 +347,7 @@ def worker_bee_search(i, bee, lower_bounds, upper_bounds):
         bee[j] = upper_bounds[j]
 
     bee[j] = round(bee[j]) # Redondear al entero más cercano <- NO FRACTIONS
-    
+
     bee = enforce_min_partidos(bee, lower_bounds, upper_bounds, partidos_min_jornada) #Asegurar mínimo de partidos incluidos
 
     return bee
@@ -491,6 +491,21 @@ def print_hall_of_fame(HoF):
     for i, bee in enumerate(HoF):
         print("Iteration", i + 1, "-> Bee:", bee[0], "\tFitness:", bee[1])
 
+def get_best_individual(HoF):
+    best_individual = None
+    for i, worker_bee in enumerate(HoF):
+        if best_individual is None or best_individual[1] > worker_bee[1]: # aquí comparemos si está vacío o si su fitness es mayor al del worker bee actual
+            best_individual = worker_bee # entonces actualizamos
+    return best_individual
+
+def print_best_individual(best_individual):
+    print("\n=== Final Best Individual ===")
+    print("Bee: ", best_individual[0], "\tFitness:", best_individual[1])
+
+def print_win_v_proba(momio, proba, initial_bet = 1000):
+    print("Con una apuesta inicial de $", initial_bet, "\tganarías $", momio * initial_bet)
+    print("La probabilidad de acertar esta apuesta es de ", proba * 100)
+
 # ===================================== MAIN PROGRAM ==========================================
 # Primero cargamos los datos históricos de la Liga MX y usaremos nuestro modelo para poder conseguir la probalidad de cada partido individualmente
 df = leer_historial_liga() # Luego compararemos las dos predicciones
@@ -508,5 +523,10 @@ for jornada in jornadas_partidos:
     HoF = [] # Hall of Fame
     worker_bees = create_worker_bees(lower_bounds, upper_bounds, jornada, print_progress = False)
     final_worker_bees, HoF = beehive_algorithm(worker_bees, lower_bounds, upper_bounds, jornada, print_progress = False)
-    print_hall_of_fame(HoF)
+    best_bee = get_best_individual(HoF)
+    print_best_individual(best_bee)
+    best_bee_momio = get_momios(best_bee[0], jornada, n)
+    best_bee_proba = get_prob_acertar(best_bee[0], jornada, n)
+    print_win_v_proba(best_bee_momio, best_bee_proba)
+    #print_hall_of_fame(HoF)
     print("\n")
